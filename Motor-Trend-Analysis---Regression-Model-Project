@@ -1,0 +1,78 @@
+# Motor-Trend-Analysis---Regression-Model-Project
+Data Processing
+First, load the dataset and perform some basic exploratory data analysis.
+
+library(datasets)
+data(mtcars)
+Transform the class of some variables.
+
+mtcars$cyl <- factor(mtcars$cyl)
+mtcars$vs <- factor(mtcars$vs)
+mtcars$gear <- factor(mtcars$gear)
+mtcars$carb <- factor(mtcars$carb)
+mtcars$am <- factor(mtcars$am,labels=c('Automatic','Manual'))
+The pairwise scatter plot between all variables is also shown (Appendix 1).
+
+1. Is an automatic or manual transmission better for MPG?
+Plot a boxplot of MPG by transmission types (Appendix 2).
+
+From the box plot, it seems like manual transmission is better than automatic transmission for MPG.
+
+Conduct a t-test to test the hypothesis.
+
+t.test(mtcars$mpg~mtcars$am)
+## 
+##  Welch Two Sample t-test
+## 
+## data:  mtcars$mpg by mtcars$am
+## t = -3.7671, df = 18.332, p-value = 0.001374
+## alternative hypothesis: true difference in means is not equal to 0
+## 95 percent confidence interval:
+##  -11.280194  -3.209684
+## sample estimates:
+## mean in group Automatic    mean in group Manual 
+##                17.14737                24.39231
+Based on the results, p-value = 0.001374<0.05, we reject the null hypothesis that there is no difference in MPG, and conclude that manual transmission is better than automatic transmission for MPG, with assumption that all other conditions remain unchanged.
+
+2. Quantify the MPG difference between automatic and manual transmissions
+Here we try to quantify the MPG difference between transmission types, and find if there are other variables that account for the MPG differences.
+
+First, do a multivariate linear regression with all variables.
+
+Multi = lm(data = mtcars, mpg~.)
+We use the step function in R for a stepwise regression, where the choice of predictor is carried out automatically by comparing certain criterion, eg AIC.
+
+Best = step(Multi, direction = "both")
+summary(Best)
+## 
+## Call:
+## lm(formula = mpg ~ cyl + hp + wt + am, data = mtcars)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -3.9387 -1.2560 -0.4013  1.1253  5.0513 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(>|t|)    
+## (Intercept) 33.70832    2.60489  12.940 7.73e-13 ***
+## cyl6        -3.03134    1.40728  -2.154  0.04068 *  
+## cyl8        -2.16368    2.28425  -0.947  0.35225    
+## hp          -0.03211    0.01369  -2.345  0.02693 *  
+## wt          -2.49683    0.88559  -2.819  0.00908 ** 
+## amManual     1.80921    1.39630   1.296  0.20646    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 2.41 on 26 degrees of freedom
+## Multiple R-squared:  0.8659, Adjusted R-squared:  0.8401 
+## F-statistic: 33.57 on 5 and 26 DF,  p-value: 1.506e-10
+The results suggests that the best model includes cyl6, cyl8, hp, wt, and amManual variables. About 86.59% of the variance is explained by this model. Cylinders change negatively with mpg (-3.03miles and -2.16miles for cyl6 and cyl8 respectively), so do with horsepower (-0.03miles), and weight (-2.5miles for every 1,000lb). On the other hand, manual transmission is 1.81mpg better than automatic transmission.
+
+Residual plots seems to be randomly scattered, and some transformation may be needed for linearity (Appendix 3).
+
+Conclusion
+On average, manual transmission is better than automatic transmission by 1.81mpg. However, transmission type is not the only factor accounting for MPG, cylinders, horsepower, and weitght are the important factors in affecting the MPG.
+
+Appendix
+Appendix 1
+pairs(mtcars)
